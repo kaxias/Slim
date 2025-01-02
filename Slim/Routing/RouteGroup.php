@@ -61,9 +61,9 @@ final class RouteGroup implements MiddlewareCollectionInterface, RouteCollection
     public function map(array $methods, string $path, callable|string $handler): Route
     {
         $routePath = ($path === '' || $path === '/') ? $this->prefix : $this->prefix . sprintf(
-                '/%s',
-                ltrim($path, '/')
-            );
+            '/%s',
+            ltrim($path, '/')
+        );
         $route = new Route($methods, $routePath, $handler, $this);
         $this->routeCollector->addRoute($methods, $path, $route);
 

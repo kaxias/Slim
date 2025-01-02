@@ -35,26 +35,22 @@ use const SEEK_SET;
 
 class MockStream implements StreamInterface
 {
-    /** @var resource A resource reference */
+    /** @var resource|null A resource reference */
     private $stream;
 
-    /** @var bool */
-    private $seekable;
+    private bool $seekable = false;
 
-    /** @var bool */
-    private $readable;
+    private bool $readable = false;
 
-    /** @var bool */
-    private $writable;
+    private bool $writable = false;
 
     /** @var array|mixed|void|null */
-    private $uri;
+    private mixed $uri = null;
 
-    /** @var int|null */
-    private $size;
+    private ?int $size = null;
 
     /** @var array Hash of readable and writable stream types */
-    private static $readWriteHash = [
+    private static array $readWriteHash = [
         'read' => [
             'r' => true,
             'w+' => true,
