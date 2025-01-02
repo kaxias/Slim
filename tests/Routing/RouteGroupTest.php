@@ -72,6 +72,32 @@ class RouteGroupTest extends TestCase
         $this->assertSame('/test/foo', $route->getPattern());
     }
 
+    public function testMapCreatesAndRegistersRouteWithEmptyRoute(): void
+    {
+        $router = $this->createRouter();
+        $callback = function () {
+        };
+        $routeGroup = new RouteGroup('/test', $callback, $router);
+
+        $route = $routeGroup->map(['GET'], '', 'handler');
+        $this->assertInstanceOf(Route::class, $route);
+        $this->assertSame(['GET'], $route->getMethods());
+        $this->assertSame('/test', $route->getPattern());
+    }
+
+    public function testMapCreatesAndRegistersRouteWithSlashRoute(): void
+    {
+        $router = $this->createRouter();
+        $callback = function () {
+        };
+        $routeGroup = new RouteGroup('/test', $callback, $router);
+
+        $route = $routeGroup->map(['GET'], '/', 'handler');
+        $this->assertInstanceOf(Route::class, $route);
+        $this->assertSame(['GET'], $route->getMethods());
+        $this->assertSame('/test', $route->getPattern());
+    }
+
     public function testGroupCreatesAndRegistersNestedRouteGroup(): void
     {
         $router = $this->createRouter();
