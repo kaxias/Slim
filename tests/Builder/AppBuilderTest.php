@@ -12,12 +12,14 @@ namespace Slim\Tests\Builder;
 
 use DI\Container;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Builder\AppBuilder;
 use Slim\Container\DefaultDefinitions;
 use Slim\Container\HttpDefinitions;
+use Slim\Interfaces\ContainerFactoryInterface;
 use Slim\Middleware\EndpointMiddleware;
 use Slim\Middleware\RoutingMiddleware;
 use Slim\Tests\Traits\AppTestTrait;
@@ -28,8 +30,7 @@ final class AppBuilderTest extends TestCase
 
     public function testSetSettings(): void
     {
-        $builder = new AppBuilder();
-        $builder->setSettings([
+        $builder = (new AppBuilder())->addSettings([
             'key' => 'value',
         ]);
         $app = $builder->build();
@@ -53,11 +54,11 @@ final class AppBuilderTest extends TestCase
     public function testSetSettingsMerged(): void
     {
         $builder = new AppBuilder();
-        $builder->setSettings([
+        $builder->addSettings([
             'key' => 'value',
             'key2' => 'value2',
         ]);
-        $builder->setSettings([
+        $builder->addSettings([
             'key' => 'value3',
         ]);
         $app = $builder->build();
@@ -82,14 +83,19 @@ final class AppBuilderTest extends TestCase
     public function testSetContainerFactory(): void
     {
         $builder = new AppBuilder();
-        $builder->setContainerFactory(function () {
-            $defaults = (new DefaultDefinitions())->__invoke();
-            $defaults = array_merge($defaults, (new HttpDefinitions())->__invoke());
+        $builder->setContainerFactory(
+            new class implements ContainerFactoryInterface {
+                public function createContainer(array $definitions = []): ContainerInterface
+                {
+                    $defaults = (new DefaultDefinitions())->__invoke();
+                    $defaults = array_merge($defaults, (new HttpDefinitions())->__invoke());
 
-            $defaults['foo'] = 'bar';
+                    $defaults['foo'] = 'bar';
 
-            return new Container($defaults);
-        });
+                    return new Container($defaults);
+                }
+            }
+        );
         $app = $builder->build();
         $app->add(RoutingMiddleware::class);
         $app->add(EndpointMiddleware::class);

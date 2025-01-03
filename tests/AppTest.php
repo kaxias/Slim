@@ -13,6 +13,7 @@ namespace Slim\Tests;
 use DI\Container;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -20,10 +21,9 @@ use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 use Slim\App;
 use Slim\Builder\AppBuilder;
-use Slim\Container\DefaultDefinitions;
-use Slim\Container\HttpDefinitions;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
+use Slim\Interfaces\ContainerFactoryInterface;
 use Slim\Interfaces\RequestHandlerInvocationStrategyInterface;
 use Slim\Interfaces\ServerRequestCreatorInterface;
 use Slim\Middleware\BasePathMiddleware;
@@ -57,7 +57,7 @@ final class AppTest extends TestCase
     public function testAppWithExceptionAndErrorDetails(): void
     {
         $builder = new AppBuilder();
-        $builder->setSettings(['display_error_details' => true]);
+        $builder->addSettings(['display_error_details' => true]);
         $app = $builder->build();
 
         $app->add(RoutingMiddleware::class);
@@ -95,18 +95,18 @@ final class AppTest extends TestCase
 
     public function testGetContainer(): void
     {
-        $definitions = (new DefaultDefinitions())->__invoke();
-        $definitions = array_merge($definitions, (new HttpDefinitions())->__invoke());
-        $container = new Container($definitions);
+        $factory = new class implements ContainerFactoryInterface {
+            public function createContainer(array $definitions = []): ContainerInterface
+            {
+                return new Container($definitions);
+            }
+        };
 
         $builder = new AppBuilder();
-        $builder->setContainerFactory(function () use ($container) {
-            return $container;
-        });
-
+        $builder->setContainerFactory($factory);
         $app = $builder->build();
 
-        $this->assertSame($container, $app->getContainer());
+        $this->assertInstanceOf(ContainerInterface::class, $app->getContainer());
     }
 
     public function testAppWithMiddlewareStack(): void

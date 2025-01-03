@@ -10,12 +10,13 @@ declare(strict_types=1);
 
 namespace Slim\Builder;
 
-use DI\Container;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 use Slim\App;
 use Slim\Container\DefaultDefinitions;
 use Slim\Container\HttpDefinitions;
+use Slim\Container\PhpDiContainerFactory;
+use Slim\Interfaces\ContainerFactoryInterface;
 
 /**
  * This class is responsible for building and configuring a Slim application with a dependency injection (DI) container.
@@ -24,7 +25,6 @@ use Slim\Container\HttpDefinitions;
  * Key functionalities include:
  * - Building the Slim `App` instance with configured dependencies.
  * - Customizing the DI container with user-defined service definitions or a custom container factory.
- * - Setting up middleware in a specified order.
  * - Configuring application settings.
  */
 final class AppBuilder
@@ -35,9 +35,9 @@ final class AppBuilder
     private array $definitions = [];
 
     /**
-     * @var callable|null Factory function for creating a custom DI container
+     * @var ContainerFactoryInterface|null Factory function for creating a custom DI container
      */
-    private $containerFactory = null;
+    private ?ContainerFactoryInterface $containerFactory = null;
 
     /**
      * The constructor.
@@ -58,21 +58,6 @@ final class AppBuilder
     public function build(): App
     {
         return $this->buildContainer()->get(App::class);
-    }
-
-    /**
-     * Creates and configures the DI container.
-     *
-     * If a custom container factory is set, it will be used to create the container;
-     * otherwise, a default container with the provided definitions will be created.
-     *
-     * @return ContainerInterface The configured DI container
-     */
-    private function buildContainer(): ContainerInterface
-    {
-        return $this->containerFactory
-            ? call_user_func($this->containerFactory, $this->definitions)
-            : new Container($this->definitions);
     }
 
     /**
@@ -109,19 +94,19 @@ final class AppBuilder
     /**
      * Sets a custom factory for creating the DI container.
      *
-     * @param callable $factory A callable that returns a configured DI container
+     * @param ContainerFactoryInterface $containerFactory A DI container factory
      *
      * @return self The current AppBuilder instance for method chaining
      */
-    public function setContainerFactory(callable $factory): self
+    public function setContainerFactory(ContainerFactoryInterface $containerFactory): self
     {
-        $this->containerFactory = $factory;
+        $this->containerFactory = $containerFactory;
 
         return $this;
     }
 
     /**
-     * Sets application-wide settings in the DI container.
+     * Add application-wide settings in the DI container.
      *
      * This method allows the user to configure various settings for the Slim application,
      * by passing an associative array of settings.
@@ -130,7 +115,7 @@ final class AppBuilder
      *
      * @return self The current AppBuilder instance for method chaining
      */
-    public function setSettings(array $settings): self
+    public function addSettings(array $settings): self
     {
         $this->addDefinitions(
             [
@@ -139,5 +124,20 @@ final class AppBuilder
         );
 
         return $this;
+    }
+
+    /**
+     * Creates and configures the DI container.
+     *
+     * If a custom container factory is set, it will be used to create the container;
+     * otherwise, a default container with the provided definitions will be created.
+     *
+     * @return ContainerInterface The configured DI container
+     */
+    private function buildContainer(): ContainerInterface
+    {
+        $this->containerFactory = $this->containerFactory ?? new PhpDiContainerFactory();
+
+        return $this->containerFactory->createContainer($this->definitions);
     }
 }

@@ -131,8 +131,8 @@ final class ExceptionHandlerTest extends TestCase
 
         /** @var ExceptionHandler $exceptionHandler */
         $exceptionHandler = $app->getContainer()->get(ExceptionHandlerInterface::class);
-        $exceptionHandler->withDisplayErrorDetails(false);
         $exceptionHandler
+            ->withDisplayErrorDetails(false)
             ->withoutHandlers()
             ->withHandler('application/json', JsonExceptionRenderer::class)
             ->withHandler('application/xml', XmlExceptionRenderer::class);

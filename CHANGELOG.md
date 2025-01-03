@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support to build a custom middleware pipeline without the Slim App class. See new `ResponseFactoryMiddleware`
 - New media type detector
 - New Config class and ConfigInterface
+- New PhpDiContainerFactory class and ContainerFactoryInterface 
 
 ### Changed
 
