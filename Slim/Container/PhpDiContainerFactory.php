@@ -20,4 +20,14 @@ final class PhpDiContainerFactory implements ContainerFactoryInterface
     {
         return new Container($definitions);
     }
+
+    public function addDefinitions(): array
+    {
+        return [];
+    }
+
+    public function addSettings(): array
+    {
+        return [];
+    }
 }

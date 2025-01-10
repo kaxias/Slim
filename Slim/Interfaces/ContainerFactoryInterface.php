@@ -15,4 +15,6 @@ use Psr\Container\ContainerInterface;
 interface ContainerFactoryInterface
 {
     public function createContainer(array $definitions = []): ContainerInterface;
+    public function addDefinitions(): array;
+    public function addSettings(): array;
 }

@@ -57,6 +57,9 @@ final class AppBuilder
      */
     public function build(): App
     {
+        $this->addDefinitions($this->containerFactory->addDefinitions());
+        $this->addSettings($this->containerFactory->addSettings());
+
         return $this->buildContainer()->get(App::class);
     }
 
